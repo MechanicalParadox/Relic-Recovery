@@ -1,0 +1,774 @@
+<html>
+<head>
+<title>encoderMovement.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+.s0 { color: rgb(204,120,50); }
+.s1 { color: rgb(169,183,198); }
+.s2 { color: rgb(98,151,85); font-style: italic; }
+.s3 { color: rgb(106,135,89); }
+.s4 { color: rgb(128,128,128); }
+.s5 { color: rgb(104,151,187); }
+.s6 { color: rgb(98,151,85); font-weight: bold; font-style: italic; }
+</style>
+</head>
+<BODY BGCOLOR="#2b2b2b">
+<TABLE CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<TR><TD><CENTER>
+<FONT FACE="Arial, Helvetica" COLOR="#000000">
+encoderMovement.java</FONT>
+</center></TD></TR></TABLE>
+<pre>
+<span class="s0">package </span><span class="s1">org.firstinspires.ftc.teamcode</span><span class="s0">;</span><span class="s1"> 
+ 
+</span><span class="s0">import </span><span class="s1">com.qualcomm.hardware.bosch.BNO055IMU</span><span class="s0">;</span><span class="s1"> 
+</span><span class="s0">import </span><span class="s1">com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator</span><span class="s0">;</span><span class="s1"> 
+</span><span class="s0">import </span><span class="s1">com.qualcomm.robotcore.eventloop.opmode.Autonomous</span><span class="s0">;</span><span class="s1"> 
+</span><span class="s0">import </span><span class="s1">com.qualcomm.robotcore.eventloop.opmode.Disabled</span><span class="s0">;</span><span class="s1"> 
+</span><span class="s0">import </span><span class="s1">com.qualcomm.robotcore.eventloop.opmode.LinearOpMode</span><span class="s0">;</span><span class="s1"> 
+</span><span class="s0">import </span><span class="s1">com.qualcomm.robotcore.hardware.ColorSensor</span><span class="s0">;</span><span class="s1"> 
+</span><span class="s0">import </span><span class="s1">com.qualcomm.robotcore.hardware.DcMotor</span><span class="s0">;</span><span class="s1"> 
+</span><span class="s0">import </span><span class="s1">com.qualcomm.robotcore.hardware.Servo</span><span class="s0">;</span><span class="s1"> 
+</span><span class="s0">import </span><span class="s1">com.qualcomm.robotcore.util.ElapsedTime</span><span class="s0">;</span><span class="s1"> 
+</span><span class="s0">import </span><span class="s1">com.qualcomm.robotcore.util.Range</span><span class="s0">;</span><span class="s1"> 
+ 
+</span><span class="s0">import </span><span class="s1">org.firstinspires.ftc.robotcore.external.navigation.AngleUnit</span><span class="s0">;</span><span class="s1"> 
+</span><span class="s0">import </span><span class="s1">org.firstinspires.ftc.robotcore.external.navigation.AxesOrder</span><span class="s0">;</span><span class="s1"> 
+</span><span class="s0">import </span><span class="s1">org.firstinspires.ftc.robotcore.external.navigation.AxesReference</span><span class="s0">;</span><span class="s1"> 
+</span><span class="s0">import </span><span class="s1">org.firstinspires.ftc.robotcore.external.navigation.Orientation</span><span class="s0">;</span><span class="s1"> 
+</span><span class="s0">import </span><span class="s1">org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark</span><span class="s0">;</span><span class="s1"> 
+ 
+</span><span class="s2">/** 
+ * Created by MP3 on 12/27/2017. 
+ */</span><span class="s1"> 
+ 
+@Autonomous(name = </span><span class="s3">&quot;Encoder Movement&quot;</span><span class="s1">) 
+@Disabled 
+</span><span class="s0">public class </span><span class="s1">encoderMovement </span><span class="s0">extends </span><span class="s1">LinearOpMode { 
+    </span><span class="s4">/////////////////</span><span class="s1"> 
+    </span><span class="s4">//DECLERATIONS//</span><span class="s1"> 
+    </span><span class="s4">////////////////</span><span class="s1"> 
+    </span><span class="s0">enum </span><span class="s1">Color { 
+        RED</span><span class="s0">,</span><span class="s1"> 
+        BLUE</span><span class="s0">,</span><span class="s1"> 
+        UNKNOWN 
+    } 
+ 
+    </span><span class="s0">enum </span><span class="s1">outIn { 
+        INTAKE</span><span class="s0">,</span><span class="s1"> 
+        OUTAKE</span><span class="s0">,</span><span class="s1"> 
+        NONE 
+    } 
+ 
+    </span><span class="s0">enum </span><span class="s1">asst { 
+        OPEN</span><span class="s0">,</span><span class="s1"> 
+        CLOSE 
+    } 
+ 
+    BNO055IMU imu</span><span class="s0">;</span><span class="s1"> 
+ 
+    DcMotor frontLeft</span><span class="s0">;</span><span class="s1"> 
+    DcMotor frontRight</span><span class="s0">;</span><span class="s1"> 
+    DcMotor backLeft</span><span class="s0">;</span><span class="s1"> 
+    DcMotor backRight</span><span class="s0">;</span><span class="s1"> 
+    DcMotor glyphLift</span><span class="s0">;</span><span class="s1"> 
+    DcMotor glyphIntakeLeft</span><span class="s0">;</span><span class="s1"> 
+    DcMotor glyphIntakeRight</span><span class="s0">;</span><span class="s1"> 
+    DcMotor relicSlide</span><span class="s0">;</span><span class="s1"> 
+ 
+    Servo jewelDeployment</span><span class="s0">;</span><span class="s1"> 
+    Servo jewelWhacker</span><span class="s0">;</span><span class="s1"> 
+    Servo asstIntakeLeft</span><span class="s0">;</span><span class="s1"> 
+    Servo asstIntakeRight</span><span class="s0">;</span><span class="s1"> 
+    Servo relicArm</span><span class="s0">;</span><span class="s1"> 
+    Servo relicGrabber</span><span class="s0">;</span><span class="s1"> 
+ 
+    ElapsedTime eTime</span><span class="s0">;</span><span class="s1"> 
+ 
+    Orientation angles</span><span class="s0">;</span><span class="s1"> 
+ 
+    ColorSensor leftColor</span><span class="s0">;</span><span class="s1"> 
+    Color L_color</span><span class="s0">;</span><span class="s1"> 
+ 
+ 
+    </span><span class="s4">///////////////////////////////////////////////////////////////////////////////////////////////</span><span class="s1"> 
+    </span><span class="s4">//=========================================FUNCTIONS=========================================//</span><span class="s1"> 
+    </span><span class="s4">///////////////////////////////////////////////////////////////////////////////////////////////</span><span class="s1"> 
+ 
+    </span><span class="s4">//Tells the program to delay for a certain amount of seconds before moving or to allow time for movements to complete</span><span class="s1"> 
+    </span><span class="s0">public void </span><span class="s1">delay(</span><span class="s0">double </span><span class="s1">seconds){ 
+        eTime.reset()</span><span class="s0">;</span><span class="s1"> 
+        </span><span class="s0">while </span><span class="s1">(eTime.time() &lt; seconds &amp;&amp; opModeIsActive())</span><span class="s0">;</span><span class="s1"> 
+    } 
+ 
+    </span><span class="s4">//Stops the Motors and resets the drive encoders</span><span class="s1"> 
+    </span><span class="s0">public void </span><span class="s1">stopMotors(){ 
+        backRight.setPower(</span><span class="s5">0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        backLeft.setPower(</span><span class="s5">0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        frontRight.setPower(</span><span class="s5">0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        frontLeft.setPower(</span><span class="s5">0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        resetDriveEncoders()</span><span class="s0">;</span><span class="s1"> 
+        delay(</span><span class="s5">0.1</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+    } 
+ 
+    </span><span class="s4">//resets the drive encoders</span><span class="s1"> 
+    </span><span class="s0">public void </span><span class="s1">resetDriveEncoders() { 
+        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER)</span><span class="s0">;</span><span class="s1"> 
+        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER)</span><span class="s0">;</span><span class="s1"> 
+        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER)</span><span class="s0">;</span><span class="s1"> 
+        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER)</span><span class="s0">;</span><span class="s1"> 
+ 
+        delay(</span><span class="s5">0.15</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER)</span><span class="s0">;</span><span class="s1"> 
+        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER)</span><span class="s0">;</span><span class="s1"> 
+        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER)</span><span class="s0">;</span><span class="s1"> 
+        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER)</span><span class="s0">;</span><span class="s1"> 
+    } 
+ 
+    </span><span class="s4">//Gets the Encoder Avarage of the encoders</span><span class="s1"> 
+    </span><span class="s0">public int </span><span class="s1">getEncoderAverage() { 
+        </span><span class="s0">return </span><span class="s1">(</span><span class="s0">int</span><span class="s1">) (Math.abs(backLeft.getCurrentPosition()) + Math.abs(backRight.getCurrentPosition()) + 
+                Math.abs(frontRight.getCurrentPosition()) + Math.abs(frontLeft.getCurrentPosition()) / </span><span class="s5">4</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+    } 
+ 
+    </span><span class="s2">/** 
+     * This is the function that we call to move based on the error correction values 
+     * 
+     * </span><span class="s6">@param </span><span class="s2">y The forward value based on the Joystick 
+     * </span><span class="s6">@param </span><span class="s2">x The strafe value based on the Joystick 
+     * </span><span class="s6">@param </span><span class="s2">c The rotate value based on the Joysticc 
+     * </span><span class="s6">@param </span><span class="s2">driveReduc The amount to scale the power by, 0.5 is 50% power 
+     */</span><span class="s1"> 
+    </span><span class="s0">public void </span><span class="s1">moveBy(</span><span class="s0">double </span><span class="s1">y</span><span class="s0">, double </span><span class="s1">x</span><span class="s0">, double </span><span class="s1">c</span><span class="s0">, double </span><span class="s1">driveReduc) { 
+        </span><span class="s4">//Joystick deadzones</span><span class="s1"> 
+        </span><span class="s0">if</span><span class="s1">(Math.abs(y) &lt;= </span><span class="s5">0.049</span><span class="s1">) { y = </span><span class="s5">0</span><span class="s0">; </span><span class="s1">} 
+        </span><span class="s0">if</span><span class="s1">(Math.abs(x) &lt;= </span><span class="s5">0.049</span><span class="s1">) { x = </span><span class="s5">0</span><span class="s0">; </span><span class="s1">} 
+        </span><span class="s0">if</span><span class="s1">(Math.abs(c) &lt;= </span><span class="s5">0.049</span><span class="s1">) { c = </span><span class="s5">0</span><span class="s0">; </span><span class="s1">} 
+ 
+        </span><span class="s0">double </span><span class="s1">FLval = y - x + c</span><span class="s0">;</span><span class="s1"> 
+        </span><span class="s0">double </span><span class="s1">FRval = y + x - c</span><span class="s0">;</span><span class="s1"> 
+        </span><span class="s0">double </span><span class="s1">BLval = y + x + c</span><span class="s0">;</span><span class="s1"> 
+        </span><span class="s0">double </span><span class="s1">BRval = y - x - c</span><span class="s0">;</span><span class="s1"> 
+ 
+        </span><span class="s4">/* double FLabs = Math.abs(FLval); 
+        double FRabs = Math.abs(FRval); 
+        double BLabs = Math.abs(BLval); 
+        double BRabs = Math.abs(BRval); 
+ 
+        double maxPower = FLabs; 
+ 
+        if(FRabs &gt; maxPower) { 
+            maxPower = FRabs; 
+        } 
+        if(BLabs &gt; maxPower) { 
+            maxPower = BLabs; 
+        } 
+        if(BRabs &gt; maxPower) { 
+            maxPower = BRabs; 
+        } 
+ 
+        FLval /= maxPower; 
+        FRval /= maxPower; 
+        BLval /= maxPower; 
+        BRval /= maxPower; */</span><span class="s1"> 
+ 
+        </span><span class="s4">//Set power to the wheels</span><span class="s1"> 
+        frontLeft.setPower(Range.clip((FLval * driveReduc)</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">1</span><span class="s1">))</span><span class="s0">;</span><span class="s1"> 
+        frontRight.setPower(Range.clip(-(FRval * driveReduc)</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">1</span><span class="s1">))</span><span class="s0">;</span><span class="s1"> 
+        backLeft.setPower(Range.clip((BLval * driveReduc)</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">1</span><span class="s1">))</span><span class="s0">;</span><span class="s1"> 
+        backRight.setPower(Range.clip(-(BRval * driveReduc)</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">1</span><span class="s1">))</span><span class="s0">;</span><span class="s1"> 
+ 
+        telemetry.addData(</span><span class="s3">&quot;FL: &quot;</span><span class="s0">, </span><span class="s1">Range.clip((FLval * driveReduc)</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">1</span><span class="s1">))</span><span class="s0">;</span><span class="s1"> 
+        telemetry.addData(</span><span class="s3">&quot;FR: &quot;</span><span class="s0">, </span><span class="s1">Range.clip(-(FRval * driveReduc)</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">1</span><span class="s1">))</span><span class="s0">;</span><span class="s1"> 
+        telemetry.addData(</span><span class="s3">&quot;BL: &quot;</span><span class="s0">, </span><span class="s1">Range.clip((BLval * driveReduc)</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">1</span><span class="s1">))</span><span class="s0">;</span><span class="s1"> 
+        telemetry.addData(</span><span class="s3">&quot;BR: &quot;</span><span class="s0">, </span><span class="s1">Range.clip(-(BRval * driveReduc)</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">1</span><span class="s1">))</span><span class="s0">;</span><span class="s1"> 
+        telemetry.update()</span><span class="s0">;</span><span class="s1"> 
+    } 
+ 
+ 
+    </span><span class="s2">/** 
+     * This is the function we use to turn. We use the integrated REV IMU to get the current angle 
+     * and convert the angle to use a more desirable measuring method. Next we find out how much we 
+     * are off from the desired angle. With that number we scale delta to be a motor power and then 
+     * use delta to find the c (rotate) value. 
+     * 
+     * </span><span class="s6">@param </span><span class="s2">outIn Lets us chose wether we want to Intake, Outake or not spin the intakes. 
+     * </span><span class="s6">@param </span><span class="s2">y The forward value, based on a joystick 
+     * </span><span class="s6">@param </span><span class="s2">x The strafe value, based on a joystick 
+     * </span><span class="s6">@param </span><span class="s2">c The rotate value, based on a joystick 
+     * </span><span class="s6">@param </span><span class="s2">driveReduc The scale factor for the power, 0.5 would be 50% power 
+     * </span><span class="s6">@param </span><span class="s2">desiredAngle The desired angle, used for when we move forward after a turn 
+     */</span><span class="s1"> 
+    </span><span class="s0">public void </span><span class="s1">turn(outIn outIn</span><span class="s0">, double </span><span class="s1">y</span><span class="s0">, double </span><span class="s1">x</span><span class="s0">, double </span><span class="s1">c</span><span class="s0">, double </span><span class="s1">driveReduc</span><span class="s0">, float </span><span class="s1">desiredAngle) { 
+        eTime.reset()</span><span class="s0">;</span><span class="s1"> 
+        </span><span class="s0">double </span><span class="s1">cangle</span><span class="s0">;</span><span class="s1"> 
+        </span><span class="s0">float </span><span class="s1">delta</span><span class="s0">;</span><span class="s1"> 
+        </span><span class="s0">float </span><span class="s1">adjustedAngle</span><span class="s0">;</span><span class="s1"> 
+        </span><span class="s0">float </span><span class="s1">deltaScaled</span><span class="s0">;</span><span class="s1"> 
+        </span><span class="s0">double </span><span class="s1">minPower = </span><span class="s5">0.15</span><span class="s0">;</span><span class="s1"> 
+ 
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC</span><span class="s0">, </span><span class="s1">AxesOrder.ZYX</span><span class="s0">, </span><span class="s1">AngleUnit.DEGREES)</span><span class="s0">;</span><span class="s1"> 
+ 
+        </span><span class="s4">////////////////////////////</span><span class="s1"> 
+        </span><span class="s4">//Sets the angles to 0-360//</span><span class="s1"> 
+        </span><span class="s4">////////////////////////////</span><span class="s1"> 
+ 
+        </span><span class="s0">if</span><span class="s1">(angles.firstAngle &gt; </span><span class="s5">0 </span><span class="s1">) { 
+            adjustedAngle = </span><span class="s5">360 </span><span class="s1">- angles.firstAngle</span><span class="s0">;</span><span class="s1"> 
+        } </span><span class="s0">else if</span><span class="s1">(angles.firstAngle &lt; </span><span class="s5">0</span><span class="s1">) { 
+            adjustedAngle = Math.abs(angles.firstAngle)</span><span class="s0">;</span><span class="s1"> 
+        } </span><span class="s0">else </span><span class="s1">{ 
+            adjustedAngle = </span><span class="s5">0</span><span class="s0">;</span><span class="s1"> 
+        } 
+ 
+        delta = desiredAngle - adjustedAngle</span><span class="s0">;</span><span class="s1"> 
+        </span><span class="s0">if</span><span class="s1">(delta &gt; </span><span class="s5">180</span><span class="s1">) { 
+            delta -= </span><span class="s5">360</span><span class="s0">;</span><span class="s1"> 
+        } </span><span class="s0">else if</span><span class="s1">(delta &lt; -</span><span class="s5">180</span><span class="s1">) { 
+            delta += </span><span class="s5">360</span><span class="s0">;</span><span class="s1"> 
+        } 
+ 
+        </span><span class="s0">while </span><span class="s1">(opModeIsActive() &amp;&amp; (Math.abs(delta) &gt; </span><span class="s5">1</span><span class="s1">)) { 
+            </span><span class="s4">//Gets the angles of the REV gyro</span><span class="s1"> 
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC</span><span class="s0">, </span><span class="s1">AxesOrder.ZYX</span><span class="s0">, </span><span class="s1">AngleUnit.DEGREES)</span><span class="s0">;</span><span class="s1"> 
+ 
+            </span><span class="s4">////////////////////////////</span><span class="s1"> 
+            </span><span class="s4">//Sets the angles to 0-360//</span><span class="s1"> 
+            </span><span class="s4">////////////////////////////</span><span class="s1"> 
+ 
+            </span><span class="s0">if</span><span class="s1">(angles.firstAngle &gt; </span><span class="s5">0 </span><span class="s1">) { 
+                adjustedAngle = </span><span class="s5">360 </span><span class="s1">- angles.firstAngle</span><span class="s0">;</span><span class="s1"> 
+            } </span><span class="s0">else if</span><span class="s1">(angles.firstAngle &lt; </span><span class="s5">0</span><span class="s1">) { 
+                adjustedAngle = Math.abs(angles.firstAngle)</span><span class="s0">;</span><span class="s1"> 
+            } </span><span class="s0">else </span><span class="s1">{ 
+                adjustedAngle = </span><span class="s5">0</span><span class="s0">;</span><span class="s1"> 
+            } 
+            </span><span class="s4">/////////////////////////////////////////</span><span class="s1"> 
+ 
+            delta = desiredAngle - adjustedAngle</span><span class="s0">;</span><span class="s1"> 
+            </span><span class="s0">if</span><span class="s1">(delta &gt; </span><span class="s5">180</span><span class="s1">) { 
+                delta -= </span><span class="s5">360</span><span class="s0">;</span><span class="s1"> 
+            } </span><span class="s0">else if</span><span class="s1">(delta &lt; -</span><span class="s5">180</span><span class="s1">) { 
+                delta += </span><span class="s5">360</span><span class="s0">;</span><span class="s1"> 
+            } 
+ 
+            deltaScaled =  delta / </span><span class="s5">80</span><span class="s0">;</span><span class="s1"> 
+            deltaScaled = Range.clip(deltaScaled</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">1</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+            cangle = Range.clip(deltaScaled * c</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">1</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            </span><span class="s0">if </span><span class="s1">(Math.abs(cangle) &lt; minPower) { 
+                </span><span class="s0">if</span><span class="s1">(cangle &lt; </span><span class="s5">0</span><span class="s1">) { 
+                    cangle = -minPower</span><span class="s0">;</span><span class="s1"> 
+                } </span><span class="s0">else </span><span class="s1">{ 
+                    cangle = minPower</span><span class="s0">;</span><span class="s1"> 
+                } 
+            } 
+ 
+            telemetry.addData(</span><span class="s3">&quot;Delta: &quot;</span><span class="s0">, </span><span class="s1">delta)</span><span class="s0">;</span><span class="s1"> 
+            telemetry.addData(</span><span class="s3">&quot;DeltaScaled: &quot;</span><span class="s0">, </span><span class="s1">deltaScaled)</span><span class="s0">;</span><span class="s1"> 
+            telemetry.addData(</span><span class="s3">&quot;Cangle: &quot;</span><span class="s0">, </span><span class="s1">cangle)</span><span class="s0">;</span><span class="s1"> 
+            moveBy(y</span><span class="s0">, </span><span class="s1">x</span><span class="s0">, </span><span class="s1">cangle</span><span class="s0">, </span><span class="s1">driveReduc)</span><span class="s0">;</span><span class="s1"> 
+ 
+            </span><span class="s0">if</span><span class="s1">(outIn == outIn.OUTAKE) { 
+                glyphIntakeRight.setPower(-</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            } </span><span class="s0">else if</span><span class="s1">(outIn == encoderMovement.outIn.INTAKE) { 
+                glyphIntakeLeft.setPower(-</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+                glyphIntakeRight.setPower(</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            } </span><span class="s0">else </span><span class="s1">{ 
+                glyphIntakeLeft.setPower(</span><span class="s5">0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+                glyphIntakeRight.setPower(</span><span class="s5">0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            } 
+        } 
+        stopMotors()</span><span class="s0">;</span><span class="s1"> 
+        glyphIntakeLeft.setPower(</span><span class="s5">0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        glyphIntakeRight.setPower(</span><span class="s5">0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+    } 
+ 
+    </span><span class="s2">/** 
+     * This is the function we use to move. We use the integrated REV IMU to get the current angle 
+     * and convert the angle to use a more desirable measuring method. Next we find out how much we 
+     * are off from the desired angle. With that number we scale delta to be a motor power and then 
+     * use delta to find the c (rotate) value. 
+     * 
+     * </span><span class="s6">@param </span><span class="s2">outIn Lets us chose wether we want to Intake, Outake or not spin the intakes. 
+     * </span><span class="s6">@param </span><span class="s2">y The forward value, based on a joystick 
+     * </span><span class="s6">@param </span><span class="s2">x The strafe value, based on a joystick 
+     * </span><span class="s6">@param </span><span class="s2">c The rotate value, based on a joystick 
+     * </span><span class="s6">@param </span><span class="s2">driveReduc The scale factor for the power, 0.5 would be 50% power 
+     * </span><span class="s6">@param </span><span class="s2">desiredAngle The desired angle, used for when we move forward after a turn 
+     */</span><span class="s1"> 
+    </span><span class="s0">public void </span><span class="s1">move(outIn outIn</span><span class="s0">, double </span><span class="s1">y</span><span class="s0">, double </span><span class="s1">x</span><span class="s0">, double </span><span class="s1">c</span><span class="s0">, double </span><span class="s1">driveReduc</span><span class="s0">, double </span><span class="s1">maxPower</span><span class="s0">, float </span><span class="s1">desiredAngle</span><span class="s0">, int </span><span class="s1">encoder) { 
+        eTime.reset()</span><span class="s0">;</span><span class="s1"> 
+        </span><span class="s0">double </span><span class="s1">cangle</span><span class="s0">;</span><span class="s1"> 
+        </span><span class="s0">float </span><span class="s1">delta</span><span class="s0">;</span><span class="s1"> 
+        </span><span class="s0">float </span><span class="s1">adjustedAngle</span><span class="s0">;</span><span class="s1"> 
+        </span><span class="s0">float </span><span class="s1">deltaScaled</span><span class="s0">;</span><span class="s1"> 
+        </span><span class="s0">while</span><span class="s1">(opModeIsActive() &amp;&amp; getEncoderAverage() &lt; encoder) { 
+            </span><span class="s4">//Gets the angles of the REV gyro</span><span class="s1"> 
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC</span><span class="s0">, </span><span class="s1">AxesOrder.ZYX</span><span class="s0">, </span><span class="s1">AngleUnit.DEGREES)</span><span class="s0">;</span><span class="s1"> 
+ 
+            </span><span class="s4">////////////////////////////</span><span class="s1"> 
+            </span><span class="s4">//Sets the angles to 0-360//</span><span class="s1"> 
+            </span><span class="s4">////////////////////////////</span><span class="s1"> 
+ 
+            </span><span class="s0">if</span><span class="s1">(angles.firstAngle &gt; </span><span class="s5">0 </span><span class="s1">) { 
+                adjustedAngle = </span><span class="s5">360 </span><span class="s1">- angles.firstAngle</span><span class="s0">;</span><span class="s1"> 
+            } </span><span class="s0">else if</span><span class="s1">(angles.firstAngle &lt; </span><span class="s5">0</span><span class="s1">) { 
+                adjustedAngle = Math.abs(angles.firstAngle)</span><span class="s0">;</span><span class="s1"> 
+            } </span><span class="s0">else </span><span class="s1">{ 
+                adjustedAngle = </span><span class="s5">0</span><span class="s0">;</span><span class="s1"> 
+            } 
+            </span><span class="s4">/////////////////////////////////////////</span><span class="s1"> 
+ 
+            delta = desiredAngle - adjustedAngle</span><span class="s0">;</span><span class="s1"> 
+            </span><span class="s0">if</span><span class="s1">(delta &gt; </span><span class="s5">180</span><span class="s1">) { 
+                delta -= </span><span class="s5">360</span><span class="s0">;</span><span class="s1"> 
+            } </span><span class="s0">else if</span><span class="s1">(delta &lt; -</span><span class="s5">180</span><span class="s1">) { 
+                delta += </span><span class="s5">360</span><span class="s0">;</span><span class="s1"> 
+            } 
+ 
+            deltaScaled =  delta / </span><span class="s5">80</span><span class="s0">;</span><span class="s1"> 
+            deltaScaled = Range.clip(deltaScaled</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">1</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            cangle = Range.clip(maxPower * deltaScaled + c</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">1</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+            moveBy(y</span><span class="s0">, </span><span class="s1">x</span><span class="s0">, </span><span class="s1">cangle</span><span class="s0">, </span><span class="s1">driveReduc)</span><span class="s0">;</span><span class="s1"> 
+ 
+            </span><span class="s0">if</span><span class="s1">(outIn == outIn.OUTAKE) { 
+                glyphIntakeLeft.setPower(</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            } </span><span class="s0">else if</span><span class="s1">(outIn == encoderMovement.outIn.INTAKE) { 
+                glyphIntakeLeft.setPower(-</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+                glyphIntakeRight.setPower(</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            } </span><span class="s0">else </span><span class="s1">{ 
+                glyphIntakeLeft.setPower(</span><span class="s5">0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+                glyphIntakeRight.setPower(</span><span class="s5">0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            } 
+            telemetry.addData(</span><span class="s3">&quot;c: &quot;</span><span class="s0">, </span><span class="s1">cangle)</span><span class="s0">;</span><span class="s1"> 
+            telemetry.update()</span><span class="s0">;</span><span class="s1"> 
+        } 
+        stopMotors()</span><span class="s0">;</span><span class="s1"> 
+    } 
+ 
+ 
+    </span><span class="s4">// This function lets us open the assisted intakes</span><span class="s1"> 
+    </span><span class="s0">public void </span><span class="s1">asist(asst Assist) { 
+        </span><span class="s0">if</span><span class="s1">(Assist == asst.CLOSE) { 
+            asstIntakeLeft.setPosition(</span><span class="s5">0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            asstIntakeRight.setPosition(</span><span class="s5">0.9</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        } </span><span class="s0">else if</span><span class="s1">(Assist == asst.OPEN) { 
+            asstIntakeLeft.setPosition(</span><span class="s5">0.9</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            asstIntakeRight.setPosition(</span><span class="s5">0.3</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        } 
+    } 
+ 
+    </span><span class="s4">// MultiBlue and MultiRed are for coming back from the glyph pit with a second glyph.</span><span class="s1"> 
+    </span><span class="s0">public void </span><span class="s1">multiBlue(RelicRecoveryVuMark vuMark) { 
+       </span><span class="s0">if</span><span class="s1">(vuMark != RelicRecoveryVuMark.RIGHT) { 
+           turn(outIn.INTAKE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">165</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+           move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.6</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">165</span><span class="s0">, </span><span class="s5">3200</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+           asist(asst.OPEN)</span><span class="s0">;</span><span class="s1"> 
+           glyphIntakeRight.setPower(-</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+           delay(</span><span class="s5">0.2</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+           move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">165</span><span class="s0">, </span><span class="s5">1700</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+           move(outIn.NONE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">165</span><span class="s0">, </span><span class="s5">600</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+           turn(outIn.OUTAKE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">162</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+ 
+           move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">162</span><span class="s0">, </span><span class="s5">700</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+           move(outIn.NONE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">162</span><span class="s0">, </span><span class="s5">600</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+       } </span><span class="s0">else </span><span class="s1">{ 
+           </span><span class="s4">//move(outIn.NONE, -1, 0, 0, 0.4, 1, 160, 600);  //y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+           move(outIn.INTAKE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.6</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">335</span><span class="s0">, </span><span class="s5">2000</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+           turn(outIn.INTAKE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">274</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+           turn(outIn.INTAKE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">160</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+           move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">140</span><span class="s0">, </span><span class="s5">1800</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+           asist(asst.OPEN)</span><span class="s0">;</span><span class="s1"> 
+           glyphIntakeRight.setPower(-</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+           delay(</span><span class="s5">0.2</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+           move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">144</span><span class="s0">, </span><span class="s5">1700</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+           move(outIn.NONE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">144</span><span class="s0">, </span><span class="s5">600</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+           </span><span class="s4">//turn(outIn.OUTAKE, 0, 0, 1, 0.5, 138) ;</span><span class="s1"> 
+ 
+ 
+           move(outIn.OUTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">130</span><span class="s0">, </span><span class="s5">700</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+           move(outIn.NONE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">130</span><span class="s0">, </span><span class="s5">600</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+       } 
+   } 
+ 
+    </span><span class="s0">public void </span><span class="s1">multiRed(RelicRecoveryVuMark vuMark) { 
+        </span><span class="s0">if</span><span class="s1">(vuMark != RelicRecoveryVuMark.LEFT) { 
+            turn(outIn.INTAKE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">12</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+            move(outIn.INTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.6</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">6</span><span class="s0">, </span><span class="s5">3200</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+            asist(asst.OPEN)</span><span class="s0">;</span><span class="s1"> 
+            glyphIntakeRight.setPower(-</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            delay(</span><span class="s5">0.2</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">7</span><span class="s0">, </span><span class="s5">1700</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">7</span><span class="s0">, </span><span class="s5">600</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+            move(outIn.OUTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">20</span><span class="s0">, </span><span class="s5">700</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            move(outIn.OUTAKE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">20</span><span class="s0">, </span><span class="s5">600</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+            asist(asst.OPEN)</span><span class="s0">;</span><span class="s1"> 
+        } </span><span class="s0">else </span><span class="s1">{ 
+            </span><span class="s4">//move(outIn.NONE, -1, 0, 0, 0.4, 1, 160, 600);  //y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+            move(outIn.INTAKE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.6</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">205</span><span class="s0">, </span><span class="s5">2000</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+            turn(outIn.INTAKE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">260</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+            turn(outIn.INTAKE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">30</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">30</span><span class="s0">, </span><span class="s5">1800</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+            asist(asst.OPEN)</span><span class="s0">;</span><span class="s1"> 
+            glyphIntakeRight.setPower(-</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            delay(</span><span class="s5">0.2</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">20</span><span class="s0">, </span><span class="s5">500</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+            move(outIn.OUTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">40</span><span class="s0">, </span><span class="s5">700</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            move(outIn.OUTAKE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">40</span><span class="s0">, </span><span class="s5">600</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+            asist(asst.OPEN)</span><span class="s0">;</span><span class="s1"> 
+        } 
+    } 
+ 
+    </span><span class="s4">// scoreGlyphIntakeBlue2 and scoreGlyphIntakeRed2 are for scoring the glyph in the keyed position</span><span class="s1"> 
+    </span><span class="s0">public void </span><span class="s1">scoreGlyphIntakeBlue2 (RelicRecoveryVuMark vuMark) { 
+ 
+        </span><span class="s0">if</span><span class="s1">(vuMark == RelicRecoveryVuMark.CENTER) { 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">180</span><span class="s0">, </span><span class="s5">1800</span><span class="s1">)</span><span class="s0">; </span><span class="s4">//y, x, c, driveReduc, maxPower, desiredAngle, encoder*/</span><span class="s1"> 
+        } </span><span class="s0">else if</span><span class="s1">(vuMark == RelicRecoveryVuMark.LEFT) { 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">180</span><span class="s0">, </span><span class="s5">350</span><span class="s1">)</span><span class="s0">; </span><span class="s4">//y, x, c, driveReduc, maxPower, desiredAngle, encoder*/</span><span class="s1"> 
+        } </span><span class="s0">else if</span><span class="s1">(vuMark == RelicRecoveryVuMark.RIGHT) { 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">180</span><span class="s0">, </span><span class="s5">2900</span><span class="s1">)</span><span class="s0">; </span><span class="s4">//y, x, c, driveReduc, maxPower, desiredAngle, encoder*/</span><span class="s1"> 
+        } </span><span class="s0">else </span><span class="s1">{ 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">180</span><span class="s0">, </span><span class="s5">2600</span><span class="s1">)</span><span class="s0">; </span><span class="s4">//y, x, c, driveReduc, maxPower, desiredAngle, encoder*/</span><span class="s1"> 
+        } 
+ 
+        glyphIntakeRight.setPower(-</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        delay(</span><span class="s5">0.2</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+        move(outIn.OUTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">180</span><span class="s0">, </span><span class="s5">600</span><span class="s1">)</span><span class="s0">; </span><span class="s4">//y, x, c, driveReduc, maxPower, desiredAngle, encoder*/</span><span class="s1"> 
+ 
+        move(outIn.OUTAKE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">180</span><span class="s0">, </span><span class="s5">600</span><span class="s1">)</span><span class="s0">; </span><span class="s4">//y, x, c, driveReduc, maxPower, desiredAngle, encoder*</span><span class="s1"> 
+    } 
+ 
+    </span><span class="s0">public void </span><span class="s1">scoreGlyphIntakeRed2 (RelicRecoveryVuMark vuMark) { 
+        </span><span class="s0">if</span><span class="s1">(vuMark == RelicRecoveryVuMark.CENTER) { 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">2300</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+        } </span><span class="s0">else if</span><span class="s1">(vuMark == RelicRecoveryVuMark.LEFT) { 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">3900</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+        } </span><span class="s0">else if</span><span class="s1">(vuMark == RelicRecoveryVuMark.RIGHT) { 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1000</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+        } </span><span class="s0">else </span><span class="s1">{ 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1000</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+        } 
+ 
+        glyphIntakeLeft.setPower(</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        delay(</span><span class="s5">0.2</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+        move(outIn.OUTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1000</span><span class="s1">)</span><span class="s0">; </span><span class="s4">//y, x, c, driveReduc, maxPower, desiredAngle, encoder*/</span><span class="s1"> 
+ 
+        move(outIn.OUTAKE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">600</span><span class="s1">)</span><span class="s0">; </span><span class="s4">//y, x, c, driveReduc, maxPower, desiredAngle, encoder*</span><span class="s1"> 
+    } 
+ 
+    </span><span class="s4">// moveToEndBlue and moveToEndRed are for moving to a common spot so we can get more glyphs</span><span class="s1"> 
+    </span><span class="s0">public void </span><span class="s1">moveToEndBlue(RelicRecoveryVuMark vuMark) { 
+        </span><span class="s0">if</span><span class="s1">(vuMark == RelicRecoveryVuMark.CENTER) { 
+            </span><span class="s4">// moveRight(0.5, 1600, 180);</span><span class="s1"> 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.85</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">180</span><span class="s0">, </span><span class="s5">1400</span><span class="s1">)</span><span class="s0">; </span><span class="s4">//y, x, c, driveReduc, maxPower, desiredAngle, encoder*/</span><span class="s1"> 
+        } </span><span class="s0">else if</span><span class="s1">(vuMark == RelicRecoveryVuMark.LEFT) { 
+            </span><span class="s4">// moveRight(0.5, 400, 180);</span><span class="s1"> 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.85</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">180</span><span class="s0">, </span><span class="s5">2550</span><span class="s1">)</span><span class="s0">; </span><span class="s4">//y, x, c, driveReduc, maxPower, desiredAngle, encoder*/</span><span class="s1"> 
+        } </span><span class="s0">else if</span><span class="s1">(vuMark == RelicRecoveryVuMark.RIGHT) { 
+            </span><span class="s4">// moveRight(0.5, 2900, 180);</span><span class="s1"> 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.85</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">180</span><span class="s0">, </span><span class="s5">400</span><span class="s1">)</span><span class="s0">; </span><span class="s4">//y, x, c, driveReduc, maxPower, desiredAngle, encoder*/</span><span class="s1"> 
+        } </span><span class="s0">else </span><span class="s1">{ 
+            </span><span class="s4">//moveRight(0.5, 600, 180);</span><span class="s1"> 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.85</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">180</span><span class="s0">, </span><span class="s5">300</span><span class="s1">)</span><span class="s0">; </span><span class="s4">//y, x, c, driveReduc, maxPower, desiredAngle, encoder*/</span><span class="s1"> 
+        } 
+ 
+        turn(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">335</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        asstIntakeLeft.setPosition(</span><span class="s5">0.45</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        asstIntakeRight.setPosition(</span><span class="s5">0.6</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        move(outIn.INTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.9</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">335</span><span class="s0">, </span><span class="s5">3000</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+        asist(asst.CLOSE)</span><span class="s0">;</span><span class="s1"> 
+ 
+        move(outIn.INTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">335</span><span class="s0">, </span><span class="s5">2100</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+        move(outIn.INTAKE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">335</span><span class="s0">, </span><span class="s5">700</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+        asist(asst.OPEN)</span><span class="s0">;</span><span class="s1"> 
+        delay(</span><span class="s5">0.6</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        asist(asst.CLOSE)</span><span class="s0">;</span><span class="s1"> 
+ 
+        move(outIn.INTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">335</span><span class="s0">, </span><span class="s5">1100</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+        move(outIn.INTAKE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">335</span><span class="s0">, </span><span class="s5">1100</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+        </span><span class="s4">//move(outIn.INTAKE, 1, 0, 0, 0.5, 1, 340, 1000);  //y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+        multiBlue(vuMark)</span><span class="s0">;</span><span class="s1"> 
+    } 
+ 
+    </span><span class="s0">public void </span><span class="s1">moveToEndRed(RelicRecoveryVuMark vuMark) { 
+        </span><span class="s0">if</span><span class="s1">(vuMark == RelicRecoveryVuMark.CENTER) { 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.85</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1600</span><span class="s1">)</span><span class="s0">; </span><span class="s4">//y, x, c, driveReduc, maxPower, desiredAngle, encoder*/</span><span class="s1"> 
+        } </span><span class="s0">else if</span><span class="s1">(vuMark == RelicRecoveryVuMark.LEFT) { 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.85</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">250</span><span class="s1">)</span><span class="s0">; </span><span class="s4">//y, x, c, driveReduc, maxPower, desiredAngle, encoder*/</span><span class="s1"> 
+        } </span><span class="s0">else if</span><span class="s1">(vuMark == RelicRecoveryVuMark.RIGHT) { 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.85</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">2500</span><span class="s1">)</span><span class="s0">; </span><span class="s4">//y, x, c, driveReduc, maxPower, desiredAngle, encoder*/</span><span class="s1"> 
+        } </span><span class="s0">else </span><span class="s1">{ 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.85</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">2650</span><span class="s1">)</span><span class="s0">; </span><span class="s4">//y, x, c, driveReduc, maxPower, desiredAngle, encoder*/</span><span class="s1"> 
+        } 
+ 
+        turn(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">205</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        asstIntakeLeft.setPosition(</span><span class="s5">0.45</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        asstIntakeRight.setPosition(</span><span class="s5">0.6</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        move(outIn.INTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.9</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">205</span><span class="s0">, </span><span class="s5">2200</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+        asist(asst.CLOSE)</span><span class="s0">;</span><span class="s1"> 
+ 
+        move(outIn.INTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">205</span><span class="s0">, </span><span class="s5">2100</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+        move(outIn.INTAKE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">205</span><span class="s0">, </span><span class="s5">700</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+        asist(asst.OPEN)</span><span class="s0">;</span><span class="s1"> 
+        delay(</span><span class="s5">0.6</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        asist(asst.CLOSE)</span><span class="s0">;</span><span class="s1"> 
+ 
+        move(outIn.INTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">205</span><span class="s0">, </span><span class="s5">1100</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+        move(outIn.INTAKE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">205</span><span class="s0">, </span><span class="s5">1100</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+        multiRed(vuMark)</span><span class="s0">;</span><span class="s1"> 
+    } 
+ 
+    </span><span class="s4">/* getColor and hitJewelColor are for sensing the color of the jewel and hitting the 
+    corresponding jewel */</span><span class="s1"> 
+    </span><span class="s0">public void </span><span class="s1">getColor() { 
+        L_color = Color.UNKNOWN</span><span class="s0">;</span><span class="s1"> 
+        </span><span class="s4">//Left</span><span class="s1"> 
+        </span><span class="s0">if</span><span class="s1">(leftColor.blue() &lt; leftColor.red()) { 
+            L_color= Color.RED</span><span class="s0">;</span><span class="s1"> 
+        } </span><span class="s0">else if</span><span class="s1">(leftColor.blue() &gt; leftColor.red()) { 
+            L_color= Color.BLUE</span><span class="s0">;</span><span class="s1"> 
+        } </span><span class="s0">else </span><span class="s1">{ 
+            L_color= Color.UNKNOWN</span><span class="s0">;</span><span class="s1"> 
+        } 
+    } 
+ 
+    </span><span class="s0">public void </span><span class="s1">hitJewelColor(Color color) { 
+        jewelDeployment.setPosition(</span><span class="s5">0.9</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        jewelWhacker.setPosition(</span><span class="s5">0.5</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+        delay(</span><span class="s5">1.3</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+        glyphIntakeLeft.setPower(</span><span class="s5">0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        glyphIntakeRight.setPower(</span><span class="s5">0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+        getColor()</span><span class="s0">;</span><span class="s1"> 
+        delay(</span><span class="s5">0.4</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+        </span><span class="s0">if</span><span class="s1">(color == color.BLUE) { 
+            </span><span class="s0">if</span><span class="s1">(L_color == Color.BLUE ) { 
+                telemetry.addData(</span><span class="s3">&quot;Color: &quot;</span><span class="s0">, </span><span class="s3">&quot;BLUE, RED&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+                jewelWhacker.setPosition(</span><span class="s5">1</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+                delay(</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            } </span><span class="s0">else if</span><span class="s1">(L_color == Color.RED ) { 
+                telemetry.addData(</span><span class="s3">&quot;Color: &quot;</span><span class="s0">, </span><span class="s3">&quot;RED, BLUE&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+                jewelWhacker.setPosition(</span><span class="s5">0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+                delay(</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            } </span><span class="s0">else </span><span class="s1">{ 
+                telemetry.addData(</span><span class="s3">&quot;Color: &quot;</span><span class="s0">, </span><span class="s3">&quot;Unknown&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            } 
+        } </span><span class="s0">else if</span><span class="s1">(color == color.RED) { 
+            </span><span class="s0">if</span><span class="s1">(L_color == Color.BLUE) { 
+                telemetry.addData(</span><span class="s3">&quot;Color: &quot;</span><span class="s0">, </span><span class="s3">&quot;BLUE, RED&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+                jewelWhacker.setPosition(</span><span class="s5">0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+                delay(</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            } </span><span class="s0">else if</span><span class="s1">(L_color == Color.RED) { 
+                telemetry.addData(</span><span class="s3">&quot;Color: &quot;</span><span class="s0">, </span><span class="s3">&quot;RED, BLUE&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+                jewelWhacker.setPosition(</span><span class="s5">1</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+                delay(</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            } </span><span class="s0">else </span><span class="s1">{ 
+                telemetry.addData(</span><span class="s3">&quot;Color: &quot;</span><span class="s0">, </span><span class="s3">&quot;Unknown&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            } 
+        } 
+        jewelDeployment.setPosition(</span><span class="s5">0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        telemetry.update()</span><span class="s0">;</span><span class="s1"> 
+    } 
+ 
+    </span><span class="s4">// moveToBoxlue and moveToBoxRed move to the cryptobox in the Red1 and Blue1 autos</span><span class="s1"> 
+    </span><span class="s0">public void </span><span class="s1">moveToBoxBlue(RelicRecoveryVuMark vuMark) { 
+        </span><span class="s0">if</span><span class="s1">(vuMark == RelicRecoveryVuMark.CENTER) { 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">4251</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+        } </span><span class="s0">else if</span><span class="s1">(vuMark == RelicRecoveryVuMark.LEFT) { 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">3200</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+        } </span><span class="s0">else if</span><span class="s1">(vuMark == RelicRecoveryVuMark.RIGHT) { 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">5201</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+        } </span><span class="s0">else </span><span class="s1">{ 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">2000</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+        } 
+    } 
+ 
+    </span><span class="s0">public void </span><span class="s1">moveToBoxRed(RelicRecoveryVuMark vuMark) { 
+        </span><span class="s0">if</span><span class="s1">(vuMark == RelicRecoveryVuMark.CENTER) { 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">4551</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+        } </span><span class="s0">else if</span><span class="s1">(vuMark == RelicRecoveryVuMark.LEFT) { 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">5550</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+        } </span><span class="s0">else if</span><span class="s1">(vuMark == RelicRecoveryVuMark.RIGHT) { 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">4000</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+        } </span><span class="s0">else </span><span class="s1">{ 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">4551</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+        } 
+    } 
+ 
+ 
+    </span><span class="s0">public void </span><span class="s1">scoreGlyphIntakeRed1() { 
+        turn(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">90</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+        move(outIn.OUTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">90</span><span class="s0">, </span><span class="s5">1200</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+        move(outIn.NONE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.3</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">90</span><span class="s0">, </span><span class="s5">300</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+        move(outIn.OUTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">90</span><span class="s0">, </span><span class="s5">400</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+        move(outIn.NONE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.3</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">90</span><span class="s0">, </span><span class="s5">1200</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+    } 
+ 
+    </span><span class="s0">public void </span><span class="s1">getMoreGlyphsRed1(RelicRecoveryVuMark vuMark) { 
+        turn(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">270</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+        move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">270</span><span class="s0">, </span><span class="s5">1500</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+        asist(asst.CLOSE)</span><span class="s0">;</span><span class="s1"> 
+ 
+        move(outIn.INTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">270</span><span class="s0">, </span><span class="s5">2100</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+        move(outIn.INTAKE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">270</span><span class="s0">, </span><span class="s5">700</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+        asist(asst.OPEN)</span><span class="s0">;</span><span class="s1"> 
+        delay(</span><span class="s5">0.6</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        asist(asst.CLOSE)</span><span class="s0">;</span><span class="s1"> 
+ 
+        move(outIn.INTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">270</span><span class="s0">, </span><span class="s5">1100</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+        move(outIn.INTAKE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">270</span><span class="s0">, </span><span class="s5">1100</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+    } 
+ 
+    </span><span class="s0">public void </span><span class="s1">multiRed1(RelicRecoveryVuMark vuMark) { 
+        </span><span class="s0">if</span><span class="s1">(vuMark == RelicRecoveryVuMark.LEFT) { 
+            turn(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">109</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">109</span><span class="s0">, </span><span class="s5">2700</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+            asist(asst.OPEN)</span><span class="s0">;</span><span class="s1"> 
+            glyphIntakeRight.setPower(-</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            delay(</span><span class="s5">0.2</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">109</span><span class="s0">, </span><span class="s5">1700</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">109</span><span class="s0">, </span><span class="s5">600</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+            move(outIn.OUTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">109</span><span class="s0">, </span><span class="s5">700</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            move(outIn.OUTAKE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">109</span><span class="s0">, </span><span class="s5">600</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+        } </span><span class="s0">else if</span><span class="s1">(vuMark == RelicRecoveryVuMark.CENTER) { 
+            turn(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">97</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">97</span><span class="s0">, </span><span class="s5">2700</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+            asist(asst.OPEN)</span><span class="s0">;</span><span class="s1"> 
+            glyphIntakeRight.setPower(-</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            delay(</span><span class="s5">0.2</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">97</span><span class="s0">, </span><span class="s5">1700</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">97</span><span class="s0">, </span><span class="s5">600</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+            move(outIn.OUTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">109</span><span class="s0">, </span><span class="s5">700</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            move(outIn.OUTAKE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">109</span><span class="s0">, </span><span class="s5">600</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+        } </span><span class="s0">else if</span><span class="s1">(vuMark == RelicRecoveryVuMark.RIGHT) { 
+            turn(outIn.NONE</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">90</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.5</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">90</span><span class="s0">, </span><span class="s5">2700</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+            glyphIntakeRight.setPower(-</span><span class="s5">1.0</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            delay(</span><span class="s5">0.2</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">90</span><span class="s0">, </span><span class="s5">1700</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+            move(outIn.NONE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">90</span><span class="s0">, </span><span class="s5">600</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">//y,  x,  c, driveReduc, maxPower, desiredAngle, encoder</span><span class="s1"> 
+ 
+            move(outIn.OUTAKE</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">90</span><span class="s0">, </span><span class="s5">700</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+            move(outIn.OUTAKE</span><span class="s0">, </span><span class="s1">-</span><span class="s5">1</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s0">, </span><span class="s5">0.4</span><span class="s0">, </span><span class="s5">1</span><span class="s0">, </span><span class="s5">90</span><span class="s0">, </span><span class="s5">600</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+        } 
+ 
+ 
+    } 
+@Override 
+</span><span class="s0">public void </span><span class="s1">runOpMode() </span><span class="s0">throws </span><span class="s1">InterruptedException { 
+    eTime = </span><span class="s0">new </span><span class="s1">ElapsedTime()</span><span class="s0">;</span><span class="s1"> 
+ 
+    BNO055IMU.Parameters parameters = </span><span class="s0">new </span><span class="s1">BNO055IMU.Parameters()</span><span class="s0">;</span><span class="s1"> 
+    parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES</span><span class="s0">;</span><span class="s1"> 
+    parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC</span><span class="s0">;</span><span class="s1"> 
+    parameters.calibrationDataFile = </span><span class="s3">&quot;BNO055IMUCalibration.json&quot;</span><span class="s0">; </span><span class="s4">// see the calibration sample opmode</span><span class="s1"> 
+    parameters.loggingEnabled      = </span><span class="s0">false;</span><span class="s1"> 
+    parameters.loggingTag          = </span><span class="s3">&quot;IMU&quot;</span><span class="s0">;</span><span class="s1"> 
+    parameters.accelerationIntegrationAlgorithm = </span><span class="s0">new </span><span class="s1">JustLoggingAccelerationIntegrator()</span><span class="s0">;</span><span class="s1"> 
+ 
+    imu = hardwareMap.get(BNO055IMU.</span><span class="s0">class, </span><span class="s3">&quot;imu&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+    imu.initialize(parameters)</span><span class="s0">;</span><span class="s1"> 
+ 
+    angles = imu.getAngularOrientation(AxesReference.INTRINSIC</span><span class="s0">, </span><span class="s1">AxesOrder.ZYX</span><span class="s0">, </span><span class="s1">AngleUnit.DEGREES)</span><span class="s0">;</span><span class="s1"> 
+ 
+    leftColor = hardwareMap.get(ColorSensor.</span><span class="s0">class, </span><span class="s3">&quot;sensor_color&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+ 
+    backRight = hardwareMap.dcMotor.get(</span><span class="s3">&quot;FL&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+    backLeft = hardwareMap.dcMotor.get(</span><span class="s3">&quot;FR&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+    frontRight = hardwareMap.dcMotor.get(</span><span class="s3">&quot;BL&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+    frontLeft = hardwareMap.dcMotor.get(</span><span class="s3">&quot;BR&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+    glyphLift = hardwareMap.dcMotor.get(</span><span class="s3">&quot;GL&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+    glyphIntakeLeft = hardwareMap.dcMotor.get(</span><span class="s3">&quot;GIL&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+    glyphIntakeRight = hardwareMap.dcMotor.get(</span><span class="s3">&quot;GIR&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+    glyphLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE)</span><span class="s0">;</span><span class="s1"> 
+ 
+    jewelWhacker = hardwareMap.servo.get(</span><span class="s3">&quot;JW&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+    jewelDeployment = hardwareMap.servo.get(</span><span class="s3">&quot;JA&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+    relicSlide = hardwareMap.dcMotor.get(</span><span class="s3">&quot;RS&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+    relicArm = hardwareMap.servo.get(</span><span class="s3">&quot;RA&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+    relicGrabber = hardwareMap.servo.get(</span><span class="s3">&quot;RG&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+    asstIntakeLeft = hardwareMap.servo.get(</span><span class="s3">&quot;AL&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+    asstIntakeRight = hardwareMap.servo.get(</span><span class="s3">&quot;AR&quot;</span><span class="s1">)</span><span class="s0">;</span><span class="s1"> 
+ 
+    frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE)</span><span class="s0">;</span><span class="s1"> 
+    frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE)</span><span class="s0">;</span><span class="s1"> 
+    backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE)</span><span class="s0">;</span><span class="s1"> 
+    backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE)</span><span class="s0">;</span><span class="s1"> 
+ 
+    glyphLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE)</span><span class="s0">;</span><span class="s1"> 
+} 
+} 
+ 
+</span></pre>
+</body>
+</html>
